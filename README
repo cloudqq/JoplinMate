@@ -1,0 +1,367 @@
+;; This buffer is for text that is not saved, and for Lisp evaluation.
+;; To create a file, visit it with C-c f and enter text in its buffer.
+
+(require 'plz)
+
+(require 'request)
+
+ (setq url-proxy-services
+       '(("no_proxy" . "^\\(localhost\\|172.*\\)")
+         ("http" . "192.168.2.100:1088")
+         ("https" . "192.168.2.100:1088")))
+
+(plz 'get "http://www.baidu.com")
+
+(getenv "PATH")
+
+(setq exec-path
+      '(
+	"c:\\dev\\curl-7.83.1_4-win64-mingw\\bin"
+	))
+
+;; 第一步，通过ping来测试joplin服务是否正常工作
+(request "http://localhost:41184/ping"
+  :parser (lambda () (buffer-string))
+  :error (cl-function
+	  (lambda (&rest args &key error-thrown &allow-other-keys)
+	    (message "%s" error-thrown)))
+  :success (cl-function
+	    (lambda (&key data &allow-other-keys)
+	      (message "%s" data))))
+
+
+(request "http://localhost:41184/auth/check?token=null"
+  :parser (lambda () (buffer-string))
+  :error (cl-function
+	  (lambda (&rest args &key error-thrown &allow-other-keys)
+	    (message "%s" error-thrown)))
+  :success (cl-function
+	    (lambda (&key data &allow-other-keys)
+	      (message "%s" data))))
+
+
+;; ((auth_token . qDtO6ECC9e28G4bd9YImF9))
+
+(request "http://localhost:41184/auth"
+  :type "POST"
+  :parser 'json-read
+  :error (cl-function
+	  (lambda (&rest args &key error-thrown &allow-other-keys)
+	    (message "%s" error-thrown)))
+  :success (cl-function
+	    (lambda (&key data &allow-other-keys)
+	      (message "%s" data))))
+
+(request "http://localhost:41184/auth/check?auth_token=qDtO6ECC9e28G4bd9YImF9"
+  :parser 'json-read
+  :error (cl-function
+	  (lambda (&rest args &key error-thrown &allow-other-keys)
+	    (message "%s" error-thrown)))
+  :success (cl-function
+	    (lambda (&key data &allow-other-keys)
+	      (message "%s" data))))
+
+;; 获取认证结果 accepted 并且提供了一个api的token,用于后续操作
+
+((status . accepted) (token . 875b6ebd8912030827d1aa5eb2111be7a02f6c6ee3b02cbdb7daa4639d4a9e94f45ee1fcab138c1c4c49474de3c6adbe884b07e795b85d86a72318121b802eee))
+
+(buffer-substring-no-properties (point-min) (point-max))
+
+(progn
+  (setq my '())
+  (push  (cons 'body_html (concat "<div>"  "</div>")) my)
+  (push '(title . "test-joplin") my)
+  (push '(base_url . "http://localhost") my)
+  (push '(parent_id . nil) my)
+  (push '(tags . "") my)
+  (push '(image_sizes . nil) my)
+  (push '(anchor_names . []) my)
+  (push '(name . "simplifiedpagehtml") my)
+  (push '(convert_to . "markdown") my)
+  ;; (json-serialize my)
+
+  (let* ((host "localhost") (port "41184")
+	 (token "875b6ebd8912030827d1aa5eb2111be7a02f6c6ee3b02cbdb7daa4639d4a9e94f45ee1fcab138c1c4c49474de3c6adbe884b07e795b85d86a72318121b802eee")
+	 (note (json-serialize my)))
+
+    (let ((req
+	   (concat "http://" host ":" port "/notes?token=" token)
+	   ))
+
+      (message "%s" req)
+
+      (request req
+	:type "POST"
+	:parser 'json-read
+	:data note
+	:error (cl-function
+		(lambda (&rest args &key error-thrown &allow-other-keys)
+		  (message "%s" error-thrown)))
+	:success (cl-function
+		  (lambda (&key data &allow-other-keys)
+		    (message "%s" data)))))))
+
+
+
+(progn
+  (setq my '())
+  (push '(title . "test-joplin-markdown") my)
+  (push '(body . "Some text in **MarkDown**") my)
+  ;; (json-serialize my)
+
+  (let* ((host "localhost") (port "41184")
+	 (token "875b6ebd8912030827d1aa5eb2111be7a02f6c6ee3b02cbdb7daa4639d4a9e94f45ee1fcab138c1c4c49474de3c6adbe884b07e795b85d86a72318121b802eee")
+	 (note (json-serialize my)))
+
+    (let ((req
+	   (concat "http://" host ":" port "/notes?token=" token)
+	   ))
+
+      (message "%s" req)
+
+      (request req
+	:type "POST"
+	:parser 'json-read
+	:data note
+	:error (cl-function
+		(lambda (&rest args &key error-thrown &allow-other-keys)
+		  (message "%s" error-thrown)))
+	:success (cl-function
+		  (lambda (&key data &allow-other-keys)
+		    (message "%s" data)))))))
+
+
+(progn
+  (setq my '())
+  (push '(title . "test-joplin-html") my)
+  (push '(body_html . "<b> This is HTML </b>") my)
+  ;; (json-serialize my)
+
+  (let* ((host "localhost") (port "41184")
+	 (token "875b6ebd8912030827d1aa5eb2111be7a02f6c6ee3b02cbdb7daa4639d4a9e94f45ee1fcab138c1c4c49474de3c6adbe884b07e795b85d86a72318121b802eee")
+	 (note (json-serialize my)))
+
+    (let ((req
+	   (concat "http://" host ":" port "/notes?token=" token)
+	   ))
+
+      (message "%s" req)
+
+      (request req
+	:type "POST"
+	:parser 'json-read
+	:data note
+	:error (cl-function
+		(lambda (&rest args &key error-thrown &allow-other-keys)
+		  (message "%s" error-thrown)))
+	:success (cl-function
+		  (lambda (&key data &allow-other-keys)
+		    (message "%s" data)))))))
+
+
+(id . a982a93526424f97a4b67a827353702a)
+
+
+(push  (cons 'body_html (concat "<div>"  "</div>")) my)
+
+(add-to-list 'load-path "d:\\workdir\\Github\\JoplinMate")
+
+(require 'joplin-mate)
+
+(send-to-joplin)
+
+
+
+
+(defun add-to-joplin ()
+  "add new notes to joplin"
+  (interactive)
+
+  (let ((title (car (org-roam--extract-titles-title))))
+    (message "%s" title)
+
+    
+    (with-current-buffer (org-md-export-as-markdown)
+      (setq data (buffer-substring-no-properties (point-min) (point-max)))
+      (progn
+	(setq my '())
+	(push (cons 'title title) my)
+	(push (cons 'body data) my)
+
+	(let* ((host "localhost") (port "41184")
+	       (token "875b6ebd8912030827d1aa5eb2111be7a02f6c6ee3b02cbdb7daa4639d4a9e94f45ee1fcab138c1c4c49474de3c6adbe884b07e795b85d86a72318121b802eee")
+	       (note (json-serialize my)))
+
+	  (let ((req
+		 (concat "http://" host ":" port "/notes?token=" token)))
+
+	    (message "%s" req)
+
+	    (request req
+	      :type "POST"
+	      :parser 'json-read
+	      :data note
+	      :error (cl-function
+		      (lambda (&rest args &key error-thrown &allow-other-keys)
+			(message "%s" error-thrown)))
+	      :success (cl-function
+			(lambda (&key data &allow-other-keys)
+			  (message "%s" data)
+			  (message "%s" (cdr (assoc 'id data)))))))))
+      (kill-buffer))))
+
+
+(defun add-to-joplin2 ()
+  "add new notes to joplin"
+  (interactive )
+
+
+  (let ((title  (cdr (org-roam--extract-titles-title)) ))
+    (message "%s" title)))
+
+
+https://medium.com/@radekmolenda/how-to-get-a-global-property-value-in-org-mode-b8dbbf62c6b8
+https://stackoverflow.com/questions/17208842/how-to-parse-org-mode-by-org-element-elegantly
+
+(defun local/org-get-global-properties ()
+    "Get all the global proprties in buffer"
+    (org-element-map (org-element-parse-buffer) 'keyword
+      (lambda (el) (and
+                    (string= (org-element-property :key el) "PROPERTY")
+                    (let* ((strings (split-string (org-element-property :value el)))
+                           (value (string-join (cdr strings) " "))
+                           (name (car strings)))
+                      (cons name value))))))
+
+(defun find-header2 ()
+  "find-header"
+  (interactive )
+  (with-current-buffer
+      (cdr (assoc "JOPLIN_ID" (local/org-get-global-properties))))
+  (kill-buffer))
+
+
+
+(defun find-header ()
+  "find-header"
+  (interactive )
+
+  (save-window-excursion)
+  (with-current-buffer
+
+      (let ((parsetree (org-element-parse-buffer 'keyword)))
+	(org-element-map (org-element-parse-buffer) 'keyword
+	  (lambda (h1)
+	(message "%s"    (org-element-property :value h1)))))))
+
+
+(defun sync-to-joplin ()
+  "sync not to joplin"
+  (interactive "P")
+
+  (let ((org-exprot-with-toc nil)
+	(title (org-roam--extract-titles-title)))
+    
+    (with-current-buffer (org-md-export-as-markdown)
+      (setq data (buffer-substring-no-properties (point-min) (point-max)))
+      (progn
+	(setq my '())
+	(push (cons 'title title) my)
+	(push (cons 'body data) my)
+	;; (push '(body . data) my)
+	;; (json-serialize my)
+
+	;; (message "%s" (json-serialize my))
+
+	(let* ((host "localhost") (port "41184")
+	       (token "875b6ebd8912030827d1aa5eb2111be7a02f6c6ee3b02cbdb7daa4639d4a9e94f45ee1fcab138c1c4c49474de3c6adbe884b07e795b85d86a72318121b802eee")
+	       (note (json-serialize my)))
+
+	  (let ((req
+		 (concat "http://" host ":" port "/notes/a982a93526424f97a4b67a827353702a?token=" token)
+		 ))
+
+	    (message "%s" req)
+
+	    (request req
+	      :type "PUT"
+	      :parser 'json-read
+	      :data note
+	      :error (cl-function
+		      (lambda (&rest args &key error-thrown &allow-other-keys)
+			(message "%s" error-thrown)))
+	      :success (cl-function
+			(lambda (&key data &allow-other-keys)
+			  (message "%s" data)))))))
+
+      (kill-buffer))))
+
+
+
+
+(defun sync-to-joplin3 () 
+  "sync not to joplin"
+  (interactive)
+
+  (let (
+	(title (car (org-roam--extract-titles-title))))
+    (message "%s" title)
+    
+    (with-current-buffer (org-md-export-as-markdown)
+      (setq data (buffer-substring-no-properties (point-min) (point-max)))
+      (message "%s" title)
+      (kill-buffer))))
+
+(car (list 'a))
+
+
+
+
+https://www.reddit.com/r/emacs/comments/e98yyf/send_output_of_orgmdexportasmarkdownstraight_to/
+(setq your-variable  (buffer-substring (region-beginning) (region-end)))
+
+(defun org-to-clipboard-as-markdown ()
+  (interactive)
+  (let ((org-export-with-toc nil))
+    (with-current-buffer (org-md-export-as-markdown)
+      (clipboard-kill-region (point-min) (point-max))
+      (kill-buffer))))
+
+
+
+;; 测试通过ID修改原始的文本内容
+(progn
+  (setq my '())
+  (push '(title . "test-joplin-html") my)
+  (push '(body . "This is **HTML** 中文内容呢 -24") my)
+  ;; (json-serialize my)
+
+  (let* ((host "localhost") (port "41184")
+	 (token "875b6ebd8912030827d1aa5eb2111be7a02f6c6ee3b02cbdb7daa4639d4a9e94f45ee1fcab138c1c4c49474de3c6adbe884b07e795b85d86a72318121b802eee")
+	 (note (json-serialize my)))
+
+    (let ((req
+	   (concat "http://" host ":" port "/notes/a982a93526424f97a4b67a827353702a?token=" token)
+	   ))
+
+      (message "%s" req)
+
+      (request req
+	:type "PUT"
+	:parser 'json-read
+	:data note
+	:error (cl-function
+		(lambda (&rest args &key error-thrown &allow-other-keys)
+		  (message "%s" error-thrown)))
+	:success (cl-function
+		  (lambda (&key data &allow-other-keys)
+		    (message "%s" data)))))))
+
+
+
+
+
+
+
+
+
